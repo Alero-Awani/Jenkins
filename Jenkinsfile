@@ -2,9 +2,9 @@ node {
     stage('Git checkout'){
         git branch: 'main', url: 'https://github.com/Alero-Awani/Jenkins'
     }
-    stage('Adding Known Host'){
-        tryAddKnownHost('172.16.1.123')  
-    }
+    // stage('Adding Known Host'){
+    //     tryAddKnownHost('172.16.1.123')  
+    // }
     stage('Sending DockerFile to Ansible Server over ssh'){
         sshagent(['Ansible-server']) {
             sh 'ssh -o StrictHostKeyChecking=no -l ubuntu@172.16.1.123'
