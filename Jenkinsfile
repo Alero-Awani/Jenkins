@@ -20,16 +20,6 @@ node {
 
 
 
-
-
-
-
-
-
-
-
-
-
 // pipeline {
 //     agent {
 //         node {
