@@ -2,26 +2,20 @@ node {
     stage('Git checkout'){
         git branch: 'main', url: 'https://github.com/Alero-Awani/Jenkins'
     }
-    // stage('Adding Known Host'){
-    //     tryAddKnownHost('172.16.1.123')  
-    // }
     stage('Sending DockerFile to Ansible Server over ssh'){
-        sshagent(['Ansible-server']) {
-            sh 'ssh -o StrictHostKeyChecking=no -l ubuntu@172.16.1.123'
-            sh 'scp /var/lib/jenkins/workspace/Pipeline-demo/* ubuntu@172.16.1.123:/home/ubuntu'
+        sshagent(['Ansible']) {
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@54.198.243.237'
+            sh 'scp /var/lib/jenkins/workspace/Pipeline/Dockerfile ubuntu@54.198.243.237:/home/ubuntu'
+
             }
     }
-}
-
-void tryAddKnownHost(String hostUrl){
-    // ssh-keygen -F ${hostUrl} will fail (in bash that means status code != 0) if ${hostUrl} is not yet a known host
-    def statusCode = sh script:"ssh-keygen -F ${hostUrl}", returnStatus:true
-    if(statusCode != 0){
-        sh "mkdir -p ~/.ssh"
-        sh "ssh-keyscan ${hostUrl} >> ~/.ssh/known_hosts"
+    stage('Docker build images'){
+        sshagent(['Ansible']) {
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@54.198.243.237 cd /home/ubuntu/'
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@54.198.243.237 docker image build -t pipeline:v1.$BUILD_ID .'
+        }
     }
 }
-
 
 
 
