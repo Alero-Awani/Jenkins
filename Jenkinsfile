@@ -2,32 +2,48 @@ node {
     stage('Git checkout'){
         git branch: 'main', url: 'https://github.com/Alero-Awani/Jenkins'
     }
-    stage('Sending DockerFile to Ansible Server over ssh'){
-        sshagent(['Ansible']) {
-            sh 'ssh -o StrictHostKeyChecking=no ubuntu@54.198.243.237'
-            sh 'scp /var/lib/jenkins/workspace/Pipeline/Dockerfile ubuntu@54.198.243.237:/home/ubuntu'
-
+    stage('Sending Dockerfile to Ansible Server over SSH'){
+         sshagent(['Ansible']) {
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@34.229.226.144'
+            sh 'scp /var/lib/jenkins/workspace/pipeline/Dockerfile ubuntu@34.229.226.144:/home/ubuntu'
             }
     }
-    stage('Docker build images'){
+    stage('Docker Build image'){
         sshagent(['Ansible']) {
-            sh 'ssh -o StrictHostKeyChecking=no ubuntu@54.198.243.237 cd /home/ubuntu/'
-            sh 'ssh -o StrictHostKeyChecking=no ubuntu@54.198.243.237 docker image build -t pipeline:v1.$BUILD_ID .'
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@34.229.226.144 cd /home/ubuntu/'
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@34.229.226.144 sudo docker image build -t $JOB_NAME:v1.$BUILD_ID .'
         }
     }
+    stage('Docker image tagging'){
+        sshagent(['Ansible']) {
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@34.229.226.144 cd /home/ubuntu/'
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@34.229.226.144 sudo docker image tag $JOB_NAME:v1.$BUILD_ID aleroawani/$JOB_NAME:v1.$BUILD_ID'
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@34.229.226.144 sudo docker image tag $JOB_NAME:v1.$BUILD_ID aleroawani/$JOB_NAME:latest'
+
+        }
+    }
+    stage('Push Docker images to Dockerhub'){
+        sshagent(['Ansible']) {
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@34.229.226.144 cd /home/ubuntu/'
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@34.229.226.144 sudo docker image tag $JOB_NAME:v1.$BUILD_ID aleroawani/$JOB_NAME:v1.$BUILD_ID'
+            sh 'ssh -o StrictHostKeyChecking=no ubuntu@34.229.226.144 sudo docker image tag $JOB_NAME:v1.$BUILD_ID aleroawani/$JOB_NAME:latest'
+
+        }
+    }
+    stage('Push Docker images to Dockerhub'){
+        withCredentials([string(credentialsId: 'docker_pass', variable: 'docker_pass')]) {
+            sshagent(['Ansible']) {
+                sh "ssh -o StrictHostKeyChecking=no ubuntu@34.229.226.144 sudo docker login -u aleroawani -p ${docker_pass}"
+                sh 'ssh -o StrictHostKeyChecking=no ubuntu@34.229.226.144 sudo docker image push aleroawani/$JOB_NAME:v1.$BUILD_ID '
+                sh 'ssh -o StrictHostKeyChecking=no ubuntu@34.229.226.144 sudo docker image push aleroawani/$JOB_NAME:latest'
+            }
+            
+        }
+
+    }
+    
 }
 
-#small change
-
-
-// pipeline {
-//     agent {
-//         node {
-//             stage('Git Checkout') 
-//                 git branch: 'main', url: 'https://github.com/Alero-Awani/Jenkins'
-//         }
-//     }
-// }
 
 
 

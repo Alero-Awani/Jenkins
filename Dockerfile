@@ -1,6 +1,4 @@
-FROM node:18-alpine
-WORKDIR /app
-COPY . .
-RUN yarn install --production
-CMD ["node", "src/index.js"]
-EXPOSE 3000
+ FROM nginx:1.10.1-alpine
+ COPY index.html /usr/share/nginx/html
+ EXPOSE 8080
+ CMD ["nginx", "-g", "daemon off;"]
