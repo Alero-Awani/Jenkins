@@ -1,6 +1,6 @@
 node {
-    env.ANSIBLE_IP = '172.16.1.225'
-    env.KUBE_IP = '172.16.1.100'
+    env.ANSIBLE_IP = '<Ansible-server-private-ip>'
+    env.KUBE_IP = '<Kubernetes-server-private-ip>'
 
     stage('Git checkout'){
         git branch: 'main', url: 'https://github.com/Alero-Awani/Jenkins'
@@ -46,8 +46,13 @@ node {
         }
     }
     
+    stage('kubernetes Deployment using Ansible'){
+         sshagent(['Ansible']) {
+            sh "ssh -o StrictHostKeyChecking=no ubuntu@${ANSIBLE_IP} cd /home/ubuntu"
+            sh "ssh -o StrictHostKeyChecking=no ubuntu@${ANSIBLE_IP} ansible-playbook ansible.yml"
+        }
+    }
 }
-
 
 // pipeline {
 //     agent { 
